@@ -1,17 +1,20 @@
 "use client";
 
-import { Button, Callout, Text, TextField } from "@radix-ui/themes";
-import SimpleMDE from "react-simplemde-editor";
-import "easymde/dist/easymde.min.css";
-import { Controller, useForm } from "react-hook-form";
-import axios from "axios";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { ErrorMessage, Spinner } from "@/components";
 import { createIssueSchema } from "@/types/validationSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Callout, TextField } from "@radix-ui/themes";
+import axios from "axios";
+import "easymde/dist/easymde.min.css";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-import ErrorMessage from "@/components/ErrorMessage";
-import Spinner from "@/components/Spinner";
+
+const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
+  ssr: false,
+});
 
 type IssueForm = z.infer<typeof createIssueSchema>;
 const NewIssuePage = () => {
@@ -43,7 +46,7 @@ const NewIssuePage = () => {
   });
 
   return (
-    <div className="max-w-3xl p-3 mx-auto border border-slate-700 rounded-md">
+    <div className="max-w-xl p-3">
       {error && (
         <Callout.Root color="red">
           <Callout.Text>{error}</Callout.Text>
