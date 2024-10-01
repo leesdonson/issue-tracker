@@ -7,15 +7,11 @@ import { Issue } from "@prisma/client";
 import { Button, Callout, TextField } from "@radix-ui/themes";
 import axios from "axios";
 import "easymde/dist/easymde.min.css";
-import dynamic from "next/dynamic";
+import SimpleMDE from "react-simplemde-editor";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
-
-const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
-  ssr: false,
-});
 
 type IssueFormData = z.infer<typeof createIssueSchema>;
 
@@ -36,10 +32,20 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       setSubmitting(true);
-      const response = await axios.post("/api/issues", data);
-      if (response.status === 201) {
-        router.push("/");
-        setSubmitting(false);
+      if (issue) {
+        const response = await axios.patch(`/api/issues/${issue.id}`, data);
+        if (response.status === 200) {
+          router.push("/issues/list");
+          router.refresh();
+          setSubmitting(false);
+        }
+      } else {
+        const response = await axios.post("/api/issues", data);
+        if (response.status === 201) {
+          router.push("/issues/list");
+          router.refresh();
+          setSubmitting(false);
+        }
       }
     } catch (error: any) {
       setSubmitting(false);
@@ -81,13 +87,23 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
 
           <ErrorMessage>{errors.description?.message}</ErrorMessage>
         </div>
-        <Button
-          disabled={isSubmitting}
-          variant="solid"
-          className="cursor-pointer"
-        >
-          {isSubmitting ? <Spinner /> : "Submit new Issue"}
-        </Button>
+        {issue ? (
+          <Button
+            disabled={isSubmitting}
+            variant="solid"
+            className="cursor-pointer"
+          >
+            Update Issue {isSubmitting && <Spinner />}
+          </Button>
+        ) : (
+          <Button
+            disabled={isSubmitting}
+            variant="solid"
+            className="cursor-pointer"
+          >
+            Create Issue {isSubmitting && <Spinner />}
+          </Button>
+        )}
       </form>
     </div>
   );
